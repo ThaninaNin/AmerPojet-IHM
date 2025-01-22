@@ -39,7 +39,7 @@ class ReservationView:
        # Ajouter l'image en arrière-plan
         # Ajouter l'image en arrière-plan
         image_path = 'image1.png'  # Remplacez par le chemin de votre image
-        st.image(image_path, use_column_width=True,width=400)
+        st.image(image_path, use_container_width=True,width=400)
     def afficher_formulaire_reservation(self):
         st.header("Formulaire de Réservation")
         terrain = st.text_input("Terrain", autocomplete="off")
