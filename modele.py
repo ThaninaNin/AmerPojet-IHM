@@ -170,4 +170,46 @@ class ReservationModel:
             return [{"ID": r[0], "Terrain": r[1], "Salle": r[2], "Capacité": r[3], "Utilisateur": r[4],
                 "Date": r[5], "Heure": r[6], "État": r[7]} for r in result]
         else:
-            return None
+          return None
+     def reserver_salle2(self, data):
+        terrain, salle, capacite, nom_utilisateur, date_reservation, heure_reservation = data
+
+        # Vérification de la disponibilité de la salle
+        query_check_reservation = """
+        SELECT * FROM reservations 
+        WHERE terrain = ? AND salle = ? AND capacite = ? AND date_reservation = ? AND heure_reservation = ? AND etat = 'réservé'
+        """
+        cursor = self.conn.execute(query_check_reservation, (terrain, salle, capacite, date_reservation, heure_reservation))
+        reservation_existante = cursor.fetchone()
+        
+        if reservation_existante:  # Si une réservation existe déjà
+            return "Salle déjà réservée"
+
+        # Vérifier si la salle est disponible
+        query_check_disponible = """
+        SELECT * FROM reservations 
+        WHERE terrain = ? AND salle = ? AND date_reservation = ? AND heure_reservation = ? AND etat = 'disponible'
+        """
+        cursor = self.conn.execute(query_check_disponible, (terrain, salle, date_reservation, heure_reservation))
+        salle_disponible = cursor.fetchone()
+        
+        if salle_disponible is None:  # Si aucune salle disponible n'est trouvée
+            return "Salle non disponible"
+
+        # Si la salle est disponible, effectuer la réservation
+        query_update = """
+        UPDATE reservations
+        SET etat = 'réservé', nom_utilisateur = ?, capacite = ?
+        WHERE terrain = ? AND salle = ? AND date_reservation = ? AND heure_reservation = ? AND etat = 'disponible'
+        RETURNING id;
+        """
+        cursor = self.conn.execute(query_update, (nom_utilisateur, capacite, terrain, salle, date_reservation, heure_reservation))
+        reservation_id_row = cursor.fetchone()
+        
+        if reservation_id_row is None:  # Si la mise à jour échoue pour une raison quelconque
+            return "Erreur lors de la réservation"
+
+        # Validation et enregistrement
+        self.conn.commit()
+        reservation_id = reservation_id_row[0]
+        return f"Réservation réussie ! L'ID de la réservation est : {reservation_id}"
