@@ -12,7 +12,7 @@ class ReservationController:
     def rechercher_reservation_par_date(self, date_reservation):
         return self.model.rechercher_reservation_par_date(date_reservation)    
     def reserver(self, data):
-        result=self.model.reserver_salle1(data)
+        result=self.model.reserver_salle2(data)
         return result
     def valider_champs_reservation(self, terrain, salle, nom_utilisateur, date_reservation, heure_reservation):
         """Valide les champs nécessaires pour une réservation."""
